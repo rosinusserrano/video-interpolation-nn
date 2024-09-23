@@ -3,22 +3,22 @@ import torch
 import matplotlib.pyplot as plt
 import numpy as pd
 
-from models.patch_attention_unet import Config, PatchAttentionUNET
-from dataset import MovingGIFInterpolationDataset
+from models.patch_attention_unet_mf import Config, PatchAttentionUNETMiddleFrame
+from datasets.moving_gif_middle_frame import MovingGIFMiddleFrameDataset
 
-train_dataset = MovingGIFInterpolationDataset(
+train_dataset = MovingGIFMiddleFrameDataset(
     "data/moving-gif-processed/moving-gif/train")
 train_loader = torch.utils.data.DataLoader(train_dataset,
                                            batch_size=16,
                                            shuffle=True)
-test_dataset = MovingGIFInterpolationDataset(
+test_dataset = MovingGIFMiddleFrameDataset(
     "data/moving-gif-processed/moving-gif/test")
 test_loader = torch.utils.data.DataLoader(test_dataset,
                                           batch_size=1,
                                           shuffle=False)
 
 config = Config()
-model = PatchAttentionUNET(config)
+model = PatchAttentionUNETMiddleFrame(config)
 model.load_state_dict(torch.load("runs/1/checkpoints/model_9.pth"))
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

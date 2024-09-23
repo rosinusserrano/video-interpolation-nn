@@ -4,30 +4,25 @@ from dataclasses import dataclass, field
 import torch
 from torch import nn
 
-# TODO:
-# Encoding the first and last patch embeddings separately may not be the best idea.
-# Instead concatenate x and z and then just do a single forward pass through the encoder.
-# Simply define more models and let them compete with ech other
-
 
 @dataclass
 class Config:
     patch_width: int = 32
     patch_height: int = 32
     num_channels: list[int] = field(
-        default_factory=lambda: [3, 64, 128, 256, 512])
+        default_factory=lambda: [3, 32, 64, 128, 1024])
     skip_connections: list[bool] = field(
-        default_factory=lambda: [False, False, True, True, True])
+        default_factory=lambda: [False, False, False, True, True])
     kernel_size: int = 3
     stride: int = 1
     padding: int = 1
     num_heads: int = 8
     max_width_patches: int = 8  # 256px
     max_height_patches: int = 8  # 256px
-    model_name: str = "PatchAttentionUNET-v2"
+    model_name: str = "PatchAttentionUNETNextFrame"
 
 
-class PatchAttentionUNET_v2(nn.Module):
+class PatchAttentionUNETNextFrame(nn.Module):
 
     def __init__(self, config: Config):
         super().__init__()
@@ -44,7 +39,7 @@ class PatchAttentionUNET_v2(nn.Module):
             config.num_channels[-1] * 4)
 
     def forward(self, inputs):
-        x, z = inputs
+        x, z, p = inputs
         bs1, c1, h, w = x.shape
 
         # SPLIT PATCHES
@@ -52,8 +47,8 @@ class PatchAttentionUNET_v2(nn.Module):
         x = torch.stack(torch.split(x, self.config.patch_width, dim=3), dim=1)
         x = torch.stack(torch.split(x, self.config.patch_height, dim=3), dim=1)
 
-        z = torch.stack(torch.split(x, self.config.patch_width, dim=3), dim=1)
-        z = torch.stack(torch.split(x, self.config.patch_height, dim=3), dim=1)
+        z = torch.stack(torch.split(z, self.config.patch_width, dim=3), dim=1)
+        z = torch.stack(torch.split(z, self.config.patch_height, dim=3), dim=1)
 
         bs2, num_height_patches, num_width_patches, c2, h_patch, w_patch = x.shape
 
@@ -93,8 +88,9 @@ class PatchAttentionUNET_v2(nn.Module):
             patch_embeds = patch_embeds + position_embeds
 
             if self.config.skip_connections[-1]:
-                outs[-1] = self.attention(patch_embeds, patch_embeds,
-                                          patch_embeds)[0] + outs[-1]
+                attn_out = self.attention(patch_embeds, patch_embeds,
+                                          patch_embeds)[0]
+                outs[-1] = attn_out + patch_embeds
             else:
                 outs[-1] = self.attention(patch_embeds, patch_embeds,
                                           patch_embeds)[0]
@@ -121,7 +117,7 @@ class PatchAttentionUNET_v2(nn.Module):
 
         # DECODER
 
-        out = self.decoder((outs_x, outs_z))
+        out = self.decoder((outs_x, outs_z), p)
         out = torch.reshape(
             out,
             (bs2, num_height_patches, num_width_patches, c2, h_patch, w_patch))
@@ -174,23 +170,26 @@ class Decoder(nn.Module):
         ])
 
         self.convblocks = nn.ModuleList([
-            ConvBlock(config.num_channels[-1] * 2, config.num_channels[-1],
-                      config.kernel_size, config.stride, config.padding)
-        ] + [
             ConvBlock(channels * (3 if skip_conn else 1), channels,
                       config.kernel_size, config.stride, config.padding)
             for channels, skip_conn in zip(config.num_channels[-2::-1],
                                            config.skip_connections[-2::-1])
         ])
 
-    def forward(self, outs):
+    def forward(self, outs, p):
         outs_x, outs_z = outs
+        bs = p.shape[0]
+        p = p[:, None, None, None, None]
 
-        out = torch.cat([outs_x[-1], outs_z[-1]], dim=1)
-        out = self.convblocks[0](out)
+        out = (1 - p) * outs_x[-1].reshape(
+            (bs, -1, self.config.num_channels[-1], 2,
+             2)) + p * outs_z[-1].reshape(
+                 (bs, -1, self.config.num_channels[-1], 2, 2))
+
+        out = torch.reshape(out, (-1, self.config.num_channels[-1], 2, 2))
 
         for upconv, conv, skip_x, skip_z, skip_conn in zip(
-                self.upconvlayers, self.convblocks[1:], outs_x[-2::-1],
+                self.upconvlayers, self.convblocks, outs_x[-2::-1],
                 outs_z[-2::-1], self.config.skip_connections[-2::-1]):
             out = upconv(out)
             if skip_conn:

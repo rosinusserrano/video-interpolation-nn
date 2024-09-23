@@ -7,7 +7,7 @@ from PIL import Image, ImageSequence
 import matplotlib.pyplot as plt
 
 
-class MovingGIFInterpolationDataset(torch.utils.data.Dataset):
+class MovingGIFMiddleFrameDataset(torch.utils.data.Dataset):
 
     def __init__(self, root_dir, skip_frames=0, transform=None):
         self.root_dir = root_dir
@@ -36,5 +36,5 @@ class MovingGIFInterpolationDataset(torch.utils.data.Dataset):
                 len(frames) - (2 + self.skip_frames * 2))
             x = frames[random_idx]
             y = frames[random_idx + 1 + self.skip_frames]
-            z = frames[random_idx + 2 * (1 + self.skip_frames)]
+            z = frames[random_idx + 2 + self.skip_frames*2]
             return (x, z), y

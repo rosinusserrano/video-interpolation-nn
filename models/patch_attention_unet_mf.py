@@ -4,11 +4,6 @@ from dataclasses import dataclass
 import torch
 from torch import nn
 
-# TODO:
-# Encoding the first and last patch embeddings separately may not be the best idea.
-# Instead concatenate x and z and then just do a single forward pass through the encoder.
-# Simply define more models and let them compete with ech other
-
 
 @dataclass
 class Config:
@@ -24,7 +19,7 @@ class Config:
     model_name = "PatchAttentionUNET"
 
 
-class PatchAttentionUNET(nn.Module):
+class PatchAttentionUNETMiddleFrame(nn.Module):
 
     def __init__(self, config: Config):
         super().__init__()
@@ -49,8 +44,8 @@ class PatchAttentionUNET(nn.Module):
         x = torch.stack(torch.split(x, self.config.patch_width, dim=3), dim=1)
         x = torch.stack(torch.split(x, self.config.patch_height, dim=3), dim=1)
 
-        z = torch.stack(torch.split(x, self.config.patch_width, dim=3), dim=1)
-        z = torch.stack(torch.split(x, self.config.patch_height, dim=3), dim=1)
+        z = torch.stack(torch.split(z, self.config.patch_width, dim=3), dim=1)
+        z = torch.stack(torch.split(z, self.config.patch_height, dim=3), dim=1)
 
         bs2, num_height_patches, num_width_patches, c2, h_patch, w_patch = x.shape
 
