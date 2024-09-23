@@ -18,7 +18,7 @@ run_id = max(
 
 train_dataset = MovingGIFNextFrameDataset(
     "data/moving-gif-processed/moving-gif/train")
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
 test_dataset = MovingGIFNextFrameDataset(
     "data/moving-gif-processed/moving-gif/test")
 test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
@@ -67,7 +67,7 @@ for epoch in range(100):
         optimizer.step()
         optimizer.zero_grad()
 
-        if i % 5 == 0:
+        if i % 10 == 0:
             print("Plotting ...")
             fig, ax = plt.subplots(target.shape[0], 4)
             fig.set_size_inches(16, target.shape[0] * 4)
@@ -99,7 +99,7 @@ for epoch in range(100):
 
             (inputs, target) = batch
 
-            inputs = (inputs[0].to(device), inputs[1].to(device))
+            inputs = (inputs[0].to(device), inputs[1].to(device),inputs[2].to(device))
             target = target.to(device)
 
             output = model(inputs)
