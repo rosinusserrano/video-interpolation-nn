@@ -10,9 +10,9 @@ class Config:
     patch_width: int = 32
     patch_height: int = 32
     num_channels: list[int] = field(
-        default_factory=lambda: [3, 64, 128, 256, 2048])
+        default_factory=lambda: [3, 4, 8, 16, 32])
     skip_connections: list[bool] = field(
-        default_factory=lambda: [False, False, False, True, True])
+        default_factory=lambda: [True, True, True, True, True])
     kernel_size: int = 3
     stride: int = 1
     padding: int = 1
@@ -85,6 +85,7 @@ class PatchAttentionUNETNextFrame(nn.Module):
             position_ids = torch.arange(num_height_patches *
                                         num_width_patches)[None, :]
             position_embeds = self.patch_pos_embed(position_ids)
+            
             patch_embeds = patch_embeds + position_embeds
 
             if self.config.skip_connections[-1]:

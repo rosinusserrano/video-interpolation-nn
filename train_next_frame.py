@@ -129,7 +129,7 @@ for epoch in range(100):
                     f"runs/{run_id}/plots/results_test_epoch{epoch}.png")
                 fig.clear()
 
-        test_losses.append(loss.detach() / len(test_loader))
+        test_losses.append(test_loss.detach() / len(test_loader))
 
     plt.clf()
     plt.plot(range(len(train_losses)), train_losses)
