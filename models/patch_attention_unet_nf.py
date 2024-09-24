@@ -10,7 +10,7 @@ class Config:
     patch_width: int = 32
     patch_height: int = 32
     num_channels: list[int] = field(
-        default_factory=lambda: [3, 32, 64, 128, 1024])
+        default_factory=lambda: [3, 64, 128, 256, 2048])
     skip_connections: list[bool] = field(
         default_factory=lambda: [False, False, False, True, True])
     kernel_size: int = 3

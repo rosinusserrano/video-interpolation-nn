@@ -44,6 +44,7 @@ if not os.path.exists(f"runs/{run_id}"):
 
 for epoch in range(100):
     model.train()
+    train_loss = 0
     for i, batch in enumerate(train_loader):
         if batch is None:
             continue
@@ -60,7 +61,7 @@ for epoch in range(100):
         print("Loss calculation ...")
         loss = torch.nn.functional.mse_loss(output, target)
 
-        train_losses.append(loss.detach())
+        train_loss += loss
 
         print("Backward pass ...")
         loss.backward()
@@ -90,8 +91,10 @@ for epoch in range(100):
         print(
             f"\u21b3 Epoch {epoch}, Batch {i}/{len(train_loader)}, Loss {loss.item():.2f}\n"
         )
+    train_losses.append(train_loss.detach() / len(train_loader))
 
     model.eval()
+    test_loss = 0
     with torch.no_grad():
         for i, batch in enumerate(test_loader):
             if batch is None:
@@ -104,9 +107,10 @@ for epoch in range(100):
 
             output = model(inputs)
             loss = torch.nn.functional.mse_loss(output, target)
+            test_loss += loss
 
             print(f"[TEST] Epoch {epoch}, Batch {i}, Loss {loss.item()}")
-            test_losses.append(loss.detach())
+            
 
             if i == 0:
                 fig, ax = plt.subplots(target.shape[0], 4)
@@ -124,6 +128,8 @@ for epoch in range(100):
                 fig.savefig(
                     f"runs/{run_id}/plots/results_test_epoch{epoch}.png")
                 fig.clear()
+
+        test_losses.append(loss.detach() / len(test_loader))
 
     plt.clf()
     plt.plot(range(len(train_losses)), train_losses)

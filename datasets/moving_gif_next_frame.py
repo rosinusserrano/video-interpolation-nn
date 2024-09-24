@@ -1,4 +1,5 @@
 import os
+from random import choice
 
 import torch
 import numpy as np
@@ -25,17 +26,18 @@ class MovingGIFNextFrameDataset(torch.utils.data.Dataset):
             frames = [(frame * -1) + 1
                       for frame in frames]  # invert to black bg
 
-            random_idx = np.random.randint(0, len(frames), 3)
-            random_idx = np.sort(random_idx)
+            random_idx = np.random.randint(0, len(frames), 2)
+            first_idx, last_idx = np.sort(random_idx)
+            next_idx = first_idx + 1 if last_idx > first_idx else choice(
+                [first_idx, last_idx])
 
             # linear interpolation
-            p = (random_idx[1] - random_idx[0]) / (random_idx[2] -
-                                                       random_idx[0])
-            if  np.isnan(p):
+            p = (next_idx - first_idx) / (last_idx - first_idx)
+            if np.isnan(p):
                 p = 0
             p = torch.tensor(p).float()
 
-            x = frames[random_idx[0]]
-            y = frames[random_idx[1]]
-            z = frames[random_idx[2]]
+            x = frames[first_idx]
+            y = frames[next_idx]
+            z = frames[last_idx]
             return (x, z, p), y
