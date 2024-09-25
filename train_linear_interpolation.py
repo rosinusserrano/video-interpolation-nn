@@ -8,23 +8,23 @@ from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 
 # from models.patch_attention_unet import Config, PatchAttentionUNET
-from models import PatchAttentionUNETNextFrame, PatchAttentionUNETNextFrameConfig
-from datasets.moving_gif_next_frame import MovingGIFNextFrameDataset
+from models import PatchAttentionUNETLinearInterpolation, PatchAttentionUNETLinearInterpolationConfig
+from datasets.moving_gif_linear_interpolation import MovingGIFLinearInterpolationDataset
 
 run_id = max(
     [0] +
     [int(dirname)
      for dirname in os.listdir("runs") if dirname.isnumeric()]) + 1
 
-train_dataset = MovingGIFNextFrameDataset(
+train_dataset = MovingGIFLinearInterpolationDataset(
     "data/moving-gif-processed/moving-gif/train")
 train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-test_dataset = MovingGIFNextFrameDataset(
+test_dataset = MovingGIFLinearInterpolationDataset(
     "data/moving-gif-processed/moving-gif/test")
 test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
-config = PatchAttentionUNETNextFrameConfig(num_channels=[3, 64, 128, 256, 512])
-model = PatchAttentionUNETNextFrame(config)
+config = PatchAttentionUNETLinearInterpolationConfig()
+model = PatchAttentionUNETLinearInterpolation(config)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

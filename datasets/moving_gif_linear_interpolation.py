@@ -7,8 +7,7 @@ from torchvision import transforms
 from PIL import Image, ImageSequence
 
 
-class MovingGIFNextFrameDataset(torch.utils.data.Dataset):
-    # TODO rename: NextFrame -> LinearInterpolation
+class MovingGIFLinearInterpolationDataset(torch.utils.data.Dataset):
 
     def __init__(self, root_dir, transform=None):
         self.root_dir = root_dir

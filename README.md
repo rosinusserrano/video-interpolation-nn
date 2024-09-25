@@ -13,4 +13,4 @@
 - [ ] cross attention between first frame patch embeds and last frame patch embeds (in addition to self attention or instead of?)
 
 ## DONE
-- [x] Instead of predicting next frame or frame extractly in between, let the representation vector of predicted frame be linear interpolation between the two and the position of interpolation be an additional training input that defines how to compute the interpolated images representation -> **PatchAttentionUNETNextFrame**
+- [x] Instead of predicting next frame or frame extractly in between, let the representation vector of predicted frame be linear interpolation between the two and the position of interpolation be an additional training input that defines how to compute the interpolated images representation -> **PatchAttentionUNETLinearInterpolation**

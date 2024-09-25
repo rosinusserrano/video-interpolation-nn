@@ -23,7 +23,7 @@ class Config:
     device: str = "cuda"
 
 
-class PatchAttentionUNETNextFrame(nn.Module):
+class PatchAttentionUNETLinearInterpolation(nn.Module):
 
     def __init__(self, config: Config):
         super().__init__()
