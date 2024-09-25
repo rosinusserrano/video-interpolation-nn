@@ -22,7 +22,7 @@ class Config:
     model_name: str = "PatchAttentionUNETNextFrame"
 
 
-class PatchAttentionUNETNextFrame(nn.Module):
+class PatchAttentionUNETLinearInterpolation(nn.Module):
 
     def __init__(self, config: Config):
         super().__init__()
