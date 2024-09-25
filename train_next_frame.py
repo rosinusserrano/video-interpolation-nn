@@ -23,7 +23,7 @@ test_dataset = MovingGIFNextFrameDataset(
     "data/moving-gif-processed/moving-gif/test")
 test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
-config = PatchAttentionUNETNextFrameConfig()
+config = PatchAttentionUNETNextFrameConfig(num_channels=[3, 64, 128, 256, 512])
 model = PatchAttentionUNETNextFrame(config)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -68,21 +68,20 @@ for epoch in range(100):
         optimizer.step()
         optimizer.zero_grad()
 
-        if i % 10 == 0:
+        if i == 0:
             print("Plotting ...")
             fig, ax = plt.subplots(target.shape[0], 4)
             fig.set_size_inches(16, target.shape[0] * 4)
             for j in range(target.shape[0]):
                 ax[j,
-                   0].imshow(inputs[0][j].detach().squeeze().permute(1, 2, 0))
-                
-                ax[j, 1].imshow(target[j].detach().squeeze().permute(1, 2, 0))
+                   0].imshow(inputs[0][j].detach().cpu().squeeze().permute(1, 2, 0))
+                ax[j, 1].imshow(target[j].detach().cpu().squeeze().permute(1, 2, 0))
                 ax[j, 2].imshow(output[j].clamp(0,
-                                                1).detach().squeeze().permute(
+                                                1).detach().cpu().squeeze().permute(
                                                     1, 2, 0))
                 ax[j,2].set_xlabel(f"p = {inputs[2][j].item():.4f}")
                 ax[j,
-                   3].imshow(inputs[1][j].detach().squeeze().permute(1, 2, 0))
+                   3].imshow(inputs[1][j].detach().cpu().squeeze().permute(1, 2, 0))
 
             fig.savefig(
                 f"runs/{run_id}/plots/results_train_epoch{epoch}_batch{i}.png")
@@ -91,7 +90,7 @@ for epoch in range(100):
         print(
             f"\u21b3 Epoch {epoch}, Batch {i}/{len(train_loader)}, Loss {loss.item():.2f}\n"
         )
-    train_losses.append(train_loss.detach() / len(train_loader))
+    train_losses.append(train_loss.detach().cpu() / len(train_loader))
 
     model.eval()
     test_loss = 0
@@ -116,20 +115,20 @@ for epoch in range(100):
                 fig, ax = plt.subplots(target.shape[0], 4)
                 fig.set_size_inches(16, target.shape[0] * 4)
                 for j in range(target.shape[0]):
-                    ax[j, 0].imshow(inputs[0][j].detach().squeeze().permute(
+                    ax[j, 0].imshow(inputs[0][j].detach().cpu().squeeze().permute(
                         1, 2, 0))
-                    ax[j, 1].imshow(inputs[1][j].detach().squeeze().permute(
+                    ax[j, 1].imshow(inputs[1][j].detach().cpu().squeeze().permute(
                         1, 2, 0))
                     ax[j,
-                       2].imshow(target[j].detach().squeeze().permute(1, 2, 0))
+                       2].imshow(target[j].detach().cpu().squeeze().permute(1, 2, 0))
                     ax[j, 3].imshow(output[j].clamp(
-                        0, 1).detach().squeeze().permute(1, 2, 0))
+                        0, 1).detach().cpu().squeeze().permute(1, 2, 0))
 
                 fig.savefig(
                     f"runs/{run_id}/plots/results_test_epoch{epoch}.png")
                 fig.clear()
 
-        test_losses.append(test_loss.detach() / len(test_loader))
+        test_losses.append(test_loss.detach().cpu() / len(test_loader))
 
     plt.clf()
     plt.plot(range(len(train_losses)), train_losses)

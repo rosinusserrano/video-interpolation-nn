@@ -20,6 +20,7 @@ class Config:
     max_width_patches: int = 8  # 256px
     max_height_patches: int = 8  # 256px
     model_name: str = "PatchAttentionUNETNextFrame"
+    device: str = "cuda"
 
 
 class PatchAttentionUNETNextFrame(nn.Module):
@@ -83,7 +84,7 @@ class PatchAttentionUNETNextFrame(nn.Module):
             patch_embeds = torch.reshape(
                 outs[-1], (bs2, num_height_patches * num_width_patches, -1))
             position_ids = torch.arange(num_height_patches *
-                                        num_width_patches)[None, :]
+                                        num_width_patches, device=self.config.device)[None, :]
             position_embeds = self.patch_pos_embed(position_ids)
             
             patch_embeds = patch_embeds + position_embeds
