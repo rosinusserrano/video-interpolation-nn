@@ -11,6 +11,7 @@
 - [ ] add more attention layers
 - [ ] vary the kernel size
 - [ ] cross attention between first frame patch embeds and last frame patch embeds (in addition to self attention or instead of?)
+- [ ] (Timons idea) Just take 1 input instead of 2, with the input being the mean of the first and last frame
 
 ## DONE
 - [x] Instead of predicting next frame or frame extractly in between, let the representation vector of predicted frame be linear interpolation between the two and the position of interpolation be an additional training input that defines how to compute the interpolated images representation -> **PatchAttentionUNETLinearInterpolation**
